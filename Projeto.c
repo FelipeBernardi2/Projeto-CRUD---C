@@ -8,17 +8,17 @@
 #include <windows.h>
 #include <string.h>
 #include <stdlib.h>
-#define MAX 25 // Capacidade da lista
+#define MAX 14 // Capacidade da lista
 
 //Tipos - Registro |
 typedef struct {
     int codigo;
-    char nome[50];
-    char endereco[100];
+    char nome[40];
+    char endereco[50];
     char telefone[20];
-    char cpf[20];
+    char cpf[16];
     char email[50];
-    char data_nasc[20];
+    char data_nasc[15];
 } reg_clientes;
 
 typedef struct {
@@ -53,6 +53,64 @@ void limpa_nomeatual() {
     printf("                                                                          ");
 }
 
+//VOID OTIMIZAÇÃO TELA DE ALTERAR CLIENTES
+void puxar_clientes(char *campo, int tamanho, char *nomeCampo) {
+    int resp = 0;
+
+    limpa_mensagem();
+    gotoxy(6, 23);
+    printf("Deseja realmente alterar? (1 - Sim | 2 - Nao): ");
+    scanf("%d", &resp);
+
+    if (resp == 1) {
+        getchar();
+
+        limpa_mensagem();
+        gotoxy(6, 23);
+        printf("Digite o(a) novo(a) %s: ", nomeCampo);
+        fgets(campo, tamanho, stdin);
+        campo[strcspn(campo, "\n")] = '\0';
+
+        limpa_mensagem();
+        gotoxy(6, 23);
+        printf("Alteracao Realizada Com Sucesso!");
+    }
+}
+
+//VOID SALVAR DADOS
+void salvardados(reg_clientes clie) {
+    FILE *projeto;
+    projeto = fopen("clientes.dat", "ab");
+    fwrite(&clie, sizeof(reg_clientes), 1, projeto);
+    fclose(projeto);
+}
+
+//VOID CARREGAR DADOS
+void carregardados(lista *puxar_lista) {
+    FILE *projeto;
+    reg_clientes clie;
+    projeto = fopen("clientes.dat", "rb");
+
+    if (projeto == NULL) {
+        return;
+    }
+
+    while (fread(&clie, sizeof(reg_clientes), 1, projeto) == 1) {
+        puxar_lista->ficha[puxar_lista->fim] = clie;
+        puxar_lista->fim++;
+    }
+    fclose(projeto);
+}
+
+//VOID REESCREVER ARQUIVOS
+void reescrever_arquivo(lista *l) {
+    FILE *arq = fopen("clientes.dat", "wb");
+    for (int i = 0; i < l->fim; i++) {
+        fwrite(&l->ficha[i], sizeof(reg_clientes), 1, arq);
+    }
+    fclose(arq);
+}
+
 //VOID Tela Principal
 void tela() {
     system("cls");
@@ -60,7 +118,7 @@ void tela() {
     int l;
 
     for (l = 1; l < 25; l++) {
-        gotoxy(01, l);
+        gotoxy(1, l);
         printf("|");
 
         gotoxy(80, l);
@@ -68,7 +126,7 @@ void tela() {
     }
 
     for (c = 1; c < 81; c++) {
-        gotoxy(c, 01);
+        gotoxy(c, 1);
         printf("-");
 
         gotoxy(c, 4);
@@ -81,25 +139,25 @@ void tela() {
         printf("-");
     }
 
-    gotoxy(01, 01);
+    gotoxy(1, 1);
     printf("+");
     //same
-    gotoxy(80, 01);
+    gotoxy(80, 1);
     printf("+");
 
-    gotoxy(01, 4);
+    gotoxy(1, 4);
     printf("+");
     //same
     gotoxy(80, 4);
     printf("+");
 
-    gotoxy(01, 22);
+    gotoxy(1, 22);
     printf("+");
     //same
     gotoxy(80,22);
     printf("+");
 
-    gotoxy(01, 24);
+    gotoxy(1, 24);
     printf("+");
     //same
     gotoxy(80, 24);
@@ -117,7 +175,7 @@ void tela() {
     gotoxy(2, 23);
     printf("MSG:");
 
-    gotoxy(01, 26);
+    gotoxy(1, 26);
 };
 
 //Função que chama a Tela de cadastro de clientes
@@ -227,6 +285,7 @@ void cadastra_cliente (lista *puxar_lista) {
             } else {
                 puxar_lista->ficha[puxar_lista->fim] = clie;
                 puxar_lista->fim++;
+                salvardados(clie);
             }
         }
 
@@ -291,157 +350,43 @@ void altera_cliente (lista *puxar_lista) {
                     limpa_nomeatual();
                     gotoxy(10, 6);
                     printf("Nome Atual: %s", puxar_lista->ficha[i].nome);
-
-                    limpa_mensagem();
-                    gotoxy(6, 23);
-                    printf("Deseja realmente alterar? (1 - Sim | 2 - Nao): ");
-                    scanf("%d", &resp);
                     
-                    if (resp == 1) {
-                        getchar();
-
-                        limpa_mensagem();
-                        gotoxy(6, 23);
-                        printf("Digite o Novo Nome: ");
-                        fgets(puxar_lista->ficha[i].nome, sizeof(puxar_lista->ficha[i].nome), stdin);
-                        puxar_lista->ficha[i].nome[strcspn(puxar_lista->ficha[i].nome, "\n")] = '\0';
-
-                        limpa_mensagem();
-                        gotoxy(6, 23);
-                        printf("Alteracao Realizada Com Sucesso!");
-                    }
+                    puxar_clientes(puxar_lista->ficha[i].nome, sizeof(puxar_lista->ficha[i].nome), "Nome");
                     break;
                 case 2:
                     limpa_nomeatual();
                     gotoxy(10, 6);
                     printf("Endereco Atual: %s", puxar_lista->ficha[i].endereco);
 
-                    limpa_mensagem();
-                    gotoxy(6, 23);
-                    printf("Deseja realmente alterar? (1 - Sim | 2 - Nao): ");
-                    scanf("%d", &resp);
-                    
-                    if (resp == 1) {
-                        getchar();
-
-                        limpa_mensagem();
-                        gotoxy(6, 23);
-                        printf("Digite o Novo Endereco: ");
-                        fgets(puxar_lista->ficha[i].endereco, sizeof(puxar_lista->ficha[i].endereco), stdin);
-                        puxar_lista->ficha[i].endereco[strcspn(puxar_lista->ficha[i].endereco, "\n")] = '\0';
-
-                        limpa_mensagem();
-                        gotoxy(6, 23);
-                        printf("Alteracao Realizada Com Sucesso!");
-                    }
+                    puxar_clientes(puxar_lista->ficha[i].endereco, sizeof(puxar_lista->ficha[i].endereco), "Endereco");
                     break;
                 case 3:
                     limpa_nomeatual();
                     gotoxy(10, 6);
                     printf("Telefone Atual: %s", puxar_lista->ficha[i].telefone);
 
-                    limpa_mensagem();
-                    gotoxy(6, 23);
-                    printf("Deseja realmente alterar? (1 - Sim | 2 - Nao): ");
-                    scanf("%d", &resp);
-                    
-                    if (resp == 1) {
-                        getchar();
-
-                        gotoxy(10, 6);
-                        printf("Telefone do Cliente: %s", puxar_lista->ficha[i].telefone);
-
-                        limpa_mensagem();
-                        gotoxy(6, 23);
-                        printf("Digite o Novo Telefone: ");
-                        fgets(puxar_lista->ficha[i].telefone, sizeof(puxar_lista->ficha[i].telefone), stdin);
-                        puxar_lista->ficha[i].telefone[strcspn(puxar_lista->ficha[i].telefone, "\n")] = '\0';
-
-                        limpa_mensagem();
-                        gotoxy(6, 23);
-                        printf("Alteracao Realizada Com Sucesso!");
-                    }
+                    puxar_clientes(puxar_lista->ficha[i].telefone, sizeof(puxar_lista->ficha[i].telefone), "Telefone");
                     break;
                 case 4:
                     limpa_nomeatual();
                     gotoxy(10, 6);
                     printf("CPF Atual: %s", puxar_lista->ficha[i].cpf);
 
-                    limpa_mensagem();
-                    gotoxy(6, 23);
-                    printf("Deseja realmente alterar? (1 - Sim | 2 - Nao): ");
-                    scanf("%d", &resp);
-                    
-                    if (resp == 1) {
-                        getchar();
-
-                        gotoxy(10, 6);
-                        printf("CPF do Cliente: %s", puxar_lista->ficha[i].cpf);
-
-                        limpa_mensagem();
-                        gotoxy(6, 23);
-                        printf("Digite o Novo CPF: ");
-                        fgets(puxar_lista->ficha[i].cpf, sizeof(puxar_lista->ficha[i].cpf), stdin);
-                        puxar_lista->ficha[i].cpf[strcspn(puxar_lista->ficha[i].cpf, "\n")] = '\0';
-
-                        limpa_mensagem();
-                        gotoxy(6, 23);
-                        printf("Alteracao Realizada Com Sucesso!");
-                    }
+                    puxar_clientes(puxar_lista->ficha[i].cpf, sizeof(puxar_lista->ficha[i].cpf), "Cpf");
                     break;
                 case 5:
                     limpa_nomeatual();
                     gotoxy(10, 6);
                     printf("Email Atual: %s", puxar_lista->ficha[i].email);
 
-                    limpa_mensagem();
-                    gotoxy(6, 23);
-                    printf("Deseja realmente alterar? (1 - Sim | 2 - Nao): ");
-                    scanf("%d", &resp);
-                    
-                    if (resp == 1) {
-                        getchar();
-
-                        gotoxy(10, 6);
-                        printf("Email do Cliente: %s", puxar_lista->ficha[i].email);
-
-                        limpa_mensagem();
-                        gotoxy(6, 23);
-                        printf("Digite o Novo Email: ");
-                        fgets(puxar_lista->ficha[i].email, sizeof(puxar_lista->ficha[i].email), stdin);
-                        puxar_lista->ficha[i].email[strcspn(puxar_lista->ficha[i].email, "\n")] = '\0';
-
-                        limpa_mensagem();
-                        gotoxy(6, 23);
-                        printf("Alteracao Realizada Com Sucesso!");
-                    }
+                    puxar_clientes(puxar_lista->ficha[i].email, sizeof(puxar_lista->ficha[i].email), "Email");
                     break;
                 case 6:
                     limpa_nomeatual();
                     gotoxy(10, 6);
                     printf("Data de Nascimento Atual: %s", puxar_lista->ficha[i].data_nasc);
 
-                    limpa_mensagem();
-                    gotoxy(6, 23);
-                    printf("Deseja realmente alterar? (1 - Sim | 2 - Nao): ");
-                    scanf("%d", &resp);
-                    
-                    if (resp == 1) {
-                        getchar();
-
-                        gotoxy(10, 6);
-                        printf("Data de Nascimento do Cliente: %s", puxar_lista->ficha[i].data_nasc);
-
-                        limpa_mensagem();
-                        gotoxy(6, 23);
-                        printf("Digite a Nova Data de Nascimento: ");
-                        fgets(puxar_lista->ficha[i].data_nasc, sizeof(puxar_lista->ficha[i].data_nasc), stdin);
-                        puxar_lista->ficha[i].data_nasc[strcspn(puxar_lista->ficha[i].data_nasc, "\n")] = '\0';
-
-                        limpa_mensagem();
-                        gotoxy(6, 23);
-                        printf("Alteracao Realizada Com Sucesso!");
-                    }
+                    puxar_clientes(puxar_lista->ficha[i].data_nasc, sizeof(puxar_lista->ficha[i].data_nasc), "Data Nascimento");
                     break;
                     
                 
@@ -488,43 +433,57 @@ void consulta_cliente (lista *puxar_lista) {
         gotoxy(25, 3);
         printf("--Consulta de Clientes--");
 
+        gotoxy(10,6);
+        printf("1 - Procurar Cliente por Codigo Informado");
+
+        gotoxy(10, 8);
+        printf("2 - Listar Clientes por Codigo");
+
+        gotoxy(10, 10);
+        printf("3 - Listar Clientes por Nome");
+
         gotoxy(6, 23);
-        printf("Digite o Codigo do Cliente que Deseja Consultar: ");
-        scanf("%d", &codigo);
+        printf("Selecione a opcao desejada: ");
+        scanf("%d", &resp);
 
-        for (int i = 0; i < puxar_lista->fim; i++) {
-            if (codigo == puxar_lista->ficha[i].codigo) {
-                gotoxy(25, 5);
-                printf("Cliente encontrado!");
-                encontrado = 1;
+        switch (resp) {
+        case 1:
+            tela();
+            gotoxy(6, 23);
+            printf("Digite o Codigo do Cliente que Deseja Consultar: ");
+            scanf("%d", &codigo);
 
-                gotoxy(10, 6);
-                printf("Codigo do Cliente: %d", puxar_lista->ficha[i].codigo);
+            for (int i = 0; i < puxar_lista->fim; i++) {
+                if (codigo == puxar_lista->ficha[i].codigo) {
+                    gotoxy(25, 5);
+                    printf("Cliente encontrado!");
+                    encontrado = 1;
 
-                gotoxy(10, 12);
-                printf("1 - Nome do Cliente....: %s", puxar_lista->ficha[i].nome);
+                    gotoxy(10, 6);
+                    printf("Codigo do Cliente: %d", puxar_lista->ficha[i].codigo);
 
-                gotoxy(10, 13);
-                printf("2 - Endereco do Cliente: %s", puxar_lista->ficha[i].endereco);
+                    gotoxy(10, 12);
+                    printf("1 - Nome do Cliente....: %s", puxar_lista->ficha[i].nome);
 
-                gotoxy(10, 14);
-                printf("3 - Telefone do Cliente: %s", puxar_lista->ficha[i].telefone);
+                    gotoxy(10, 13);
+                    printf("2 - Endereco do Cliente: %s", puxar_lista->ficha[i].endereco);
 
-                gotoxy(10, 15);
-                printf("4 - CPF do Cliente.....: %s", puxar_lista->ficha[i].cpf);
+                    gotoxy(10, 14);
+                    printf("3 - Telefone do Cliente: %s", puxar_lista->ficha[i].telefone);
 
-                gotoxy(10, 16);
-                printf("5 - Email do Cliente...: %s", puxar_lista->ficha[i].email);
+                    gotoxy(10, 15);
+                    printf("4 - CPF do Cliente.....: %s", puxar_lista->ficha[i].cpf);
 
-                gotoxy(10, 17);
-                printf("6 - Data de Nascimento.: %s", puxar_lista->ficha[i].data_nasc);
+                    gotoxy(10, 16);
+                    printf("5 - Email do Cliente...: %s", puxar_lista->ficha[i].email);
 
-                break;
+                    gotoxy(10, 17);
+                    printf("6 - Data de Nascimento.: %s", puxar_lista->ficha[i].data_nasc);
+
+                    break;
+                }
             }
-
-        }
-
-        if (encontrado == 0) {
+            if (encontrado == 0) {
                 limpa_mensagem();
                 gotoxy(6, 23);
                 printf("ERRO! Codigo nao encontrado! (2 - Sair): ");
@@ -532,9 +491,104 @@ void consulta_cliente (lista *puxar_lista) {
                 getchar();
             }
 
+            break;
+
+        case 2:
+            tela(); 
+            for (int i = 0; i < puxar_lista->fim; i++) {
+                for (int j = 0; j < puxar_lista->fim - 1; j++) {
+                    if (puxar_lista->ficha[j].codigo > puxar_lista->ficha[j+1].codigo) {
+                        reg_clientes temp;
+                        temp = puxar_lista->ficha[j];
+                        puxar_lista->ficha[j] = puxar_lista->ficha[j+1];
+                        puxar_lista->ficha[j+1] = temp;
+                    }
+                }
+            }
+            gotoxy(2, 6);
+            printf("------------------------------------------------------------------------------");
+
+            gotoxy(2, 5);
+            printf("Codigo");
+
+            gotoxy(15, 5);
+            printf("Nome");
+
+            gotoxy(46, 5);
+            printf("CPF");
+
+            gotoxy(65, 5);
+            printf("Telefone");
+
+            for (int i = 0; i < puxar_lista->fim && i + 7 < 22; i++) {
+                gotoxy(3, i + 7);
+                printf("%d", puxar_lista->ficha[i].codigo);
+
+                gotoxy(14, i + 7);
+                printf("%.23s", puxar_lista->ficha[i].nome);
+
+                gotoxy(45, i + 7);
+                printf("%s", puxar_lista->ficha[i].cpf);
+
+                gotoxy(64, i + 7);
+                printf("%s", puxar_lista->ficha[i].telefone);
+            }
+
+            break;
+        case 3: 
+            tela(); 
+            for (int i = 0; i < puxar_lista->fim; i++) {
+                for (int j = 0; j < puxar_lista->fim - 1; j++) {
+                    if (strcmp(puxar_lista->ficha[j].nome, puxar_lista->ficha[j+1].nome) > 0) {
+                        reg_clientes temp;
+                        temp = puxar_lista->ficha[j];
+                        puxar_lista->ficha[j] = puxar_lista->ficha[j+1];
+                        puxar_lista->ficha[j+1] = temp;
+                    }
+                }
+            }
+            gotoxy(2, 6);
+            printf("------------------------------------------------------------------------------");
+
+            gotoxy(2, 5);
+            printf("Codigo");
+
+            gotoxy(15, 5);
+            printf("Nome");
+
+            gotoxy(46, 5);
+            printf("CPF");
+
+            gotoxy(65, 5);
+            printf("Telefone");
+
+            for (int i = 0; i < puxar_lista->fim && i + 7 < 22; i++) {
+                gotoxy(3, i + 7);
+                printf("%d", puxar_lista->ficha[i].codigo);
+
+                gotoxy(14, i + 7);
+                printf("%.23s", puxar_lista->ficha[i].nome);
+
+                gotoxy(45, i + 7);
+                printf("%s", puxar_lista->ficha[i].cpf);
+
+                gotoxy(64, i + 7);
+                printf("%s", puxar_lista->ficha[i].telefone);
+            }
+
+            break;
+
+        default:
             limpa_mensagem();
             gotoxy(6, 23);
-            printf("Deseja Consultar Outro Cliente? (1 - Sim | 2 - Nao): ");
+            printf("Opcao Invalida (2 - Sair): ");
+            scanf("%d", &resp);
+            break;
+        }
+
+            limpa_mensagem();
+            gotoxy(6, 23);
+            printf("Deseja Consultar Novamente? (1 - Sim | 2 - Nao): ");
             scanf("%d", &resp);
     } while (resp == 1);
 }
@@ -624,6 +678,9 @@ int main() {
     lista puxar_lista;
     puxar_lista.inicio = 0;
     puxar_lista.fim = 0;
+
+    carregardados(&puxar_lista);
+
     system("cls");
     do {
         tela();
@@ -656,12 +713,14 @@ int main() {
         break;
     case 2:
         altera_cliente(&puxar_lista);
+        reescrever_arquivo(&puxar_lista);
         break;
     case 3:
         consulta_cliente(&puxar_lista);
         break;
     case 4:
         exclusao_clientes(&puxar_lista);
+        reescrever_arquivo(&puxar_lista);
         break;
     }
 
